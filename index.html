@@ -192,12 +192,18 @@
     width:clamp(440px, 54vw, 760px);
     aspect-ratio: 16 / 10.4;
     transform-style:preserve-3d;
-    transform: rotateX(var(--tilt, 8deg)) rotateY(var(--rotate, 0deg));
+    transform: rotateX(var(--tilt, 8deg)) rotateY(var(--rotate, 0deg)) translateZ(0);
     --lid: 92deg;
     --tilt: 14deg;
     --rotate: -4deg;
     opacity: var(--laptop-op, 0);
     transition: none;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+  .laptop-lid, .laptop-base, .laptop-back, .laptop-screen{
+    will-change: transform;
+    backface-visibility: hidden;
   }
   .laptop-shadow{
     position:absolute;left:6%;right:6%;bottom:-6%;height:30px;
@@ -324,6 +330,29 @@
   @keyframes scrollBounce{
     0%,100%{transform:translateY(0);opacity:.5}
     50%{transform:translateY(6px);opacity:1}
+  }
+  .cover-tagline{
+    position:absolute;left:50%;top:14%;
+    transform:translate(-50%, 0) translateZ(0);
+    font-family:"Outfit";font-weight:500;
+    font-size:clamp(28px, 4vw, 48px);
+    letter-spacing:.2px;text-align:center;white-space:nowrap;
+    color:rgba(255,255,255,.95);
+    opacity:var(--tag-op, 1);
+    z-index:20;pointer-events:none;
+    text-shadow:0 2px 24px rgba(0,0,0,.6);
+    will-change:opacity;
+  }
+  .cover-tagline em{
+    font-style:normal;color:var(--accent-soft);
+  }
+  @media (max-width: 720px){
+    .cover-tagline{
+      top:18%;
+      font-size:clamp(20px, 5.6vw, 30px);
+      white-space:normal;width:min(86vw, 420px);
+      transform:translate(-50%, 0) translateZ(0);
+    }
   }
 
   /* Front face of lid (display side) */
@@ -833,6 +862,8 @@
 <section class="hero-stage" id="top">
   <div class="hero-pin">
 
+    <div class="cover-tagline" id="coverTagline">Webdesign, Hosting &amp; Pflege — <em>aus einer Hand.</em></div>
+
     <!-- Animated Webdesign Scene -->
     <div class="scene" id="scene" style="--scene-spread:0">
       <div class="scene-bg"></div>
@@ -1244,9 +1275,14 @@
         // C (18–32%): Laptop fadet ein (geschlossen) während Cover ausblendet — gleicher Pose
         // D (32–55%): Deckel klappt auf
         const coverCard = document.getElementById('coverCard');
+        const coverTagline = document.getElementById('coverTagline');
         const layProg  = smooth(Math.max(0, Math.min(1, (p - 0.08) / 0.14)));
         const handoff  = smooth(Math.max(0, Math.min(1, (p - 0.18) / 0.10)));
         const openProg = smooth(Math.max(0, Math.min(1, (p - 0.32) / 0.23)));
+        if(coverTagline){
+          const tagOp = 1 - smooth(Math.max(0, Math.min(1, (p - 0.04) / 0.10)));
+          coverTagline.style.setProperty('--tag-op', tagOp.toFixed(3));
+        }
         if(coverCard){
           // tip backward: from 14deg (matches laptop tilt) to 70deg (laying back)
           const cRot = 14 + layProg * 56;
